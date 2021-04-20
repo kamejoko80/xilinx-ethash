@@ -57,6 +57,8 @@ This project is created for testing the Ethminer's ethash opencl kernel on Xilin
 
     ```shell
     git clone --recursive https://github.com/kamejoko80/xilinx-ethash.git
+    cd xilinx-ethash
+    git checkout u200_phuong_dev
     ```
 
 ## Questions
