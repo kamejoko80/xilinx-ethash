@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.3)  # CMake version check
 
 project(xleth)               # Create project "simple_example"
 
-#set(CMAKE_CXX_STANDARD 14)            # Enable c++14 standard
+set(CMAKE_CXX_STANDARD 14)            # Enable c++14 standard
 
 # Add main.cpp file of project root directory as source file
 #set(XCL_SOURCE ./common/includes/xcl2/xcl2.cpp)
