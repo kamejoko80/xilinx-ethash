@@ -97,7 +97,7 @@ CMD_ARGS = $(BUILD_DIR)/ethash.xclbin
 EMCONFIG_DIR = $(TEMP_DIR)
 EMU_DIR = $(SDCARD)/data/emulation
 
-LDCLFLAGS += --config ./config/connectivity_u50.ini
+LDCLFLAGS += --config ./config/connectivity_u200.ini
 
 ############################## Declaring Binary Containers ##############################
 BINARY_CONTAINERS += $(BUILD_DIR)/ethash.xclbin
