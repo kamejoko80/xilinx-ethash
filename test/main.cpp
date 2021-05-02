@@ -28,10 +28,21 @@ int main(int argc, char **argv)
 
     if (strcmp(argv[2], "Xilinx") == 0)
     {
+		std::cout << "================> Xilinx" << std::endl;
+
         eth_dev = EthDevce(argv[2], argv[3], true, debug);
+		
+        //unsigned localWorkSize = 128;
+        //unsigned globalWorkSizeMultiplier = 65535;
+        //bool no_exit = false;
+
+        //eth_dev.set_params(localWorkSize, globalWorkSizeMultiplier, false);  		
+
     }
     else
     {
+		std::cout << "================> AMD" << std::endl;
+		
         eth_dev = EthDevce(argv[2], argv[3], false, debug);
 
         unsigned localWorkSize = 128;

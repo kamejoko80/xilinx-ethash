@@ -44,8 +44,8 @@ struct CLSettings
     // inputs
     bool noBinary = false;
     bool noExit = true; // note, noExit for AMD should be false, but here we set it true
-    unsigned localWorkSize = 128;
-    unsigned globalWorkSizeMultiplier = 65536;
+    unsigned localWorkSize = 128; //128;
+    unsigned globalWorkSizeMultiplier = 65536; //65536;
     // computed
     unsigned globalWorkSize = 0;
 };

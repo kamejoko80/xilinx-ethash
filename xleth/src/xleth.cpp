@@ -171,7 +171,7 @@ bool EthDevce::load_kernel()
 
     printf("KNL: L_WORKSIZE %u\n", m_settings.localWorkSize);
     printf("KNL: MULTIPLIER %u\n", m_settings.globalWorkSizeMultiplier);
-    printf("KNL: G_WORKSIZE %u\n", m_settings.localWorkSize * m_settings.localWorkSize);
+    printf("KNL: G_WORKSIZE %u\n", m_settings.localWorkSize * m_settings.globalWorkSizeMultiplier);
     printf("KNL: FASTEXIT   %u\n", (m_settings.noExit) ? 0:1);
 
     return m_knl_loaded;
@@ -269,14 +269,17 @@ bool EthDevce::gen_dag(int epoch)
     printf("DAG: epoch %u lightSize %lu dagSize %lu\n",
             epoch, m_epochContext.lightSize, m_epochContext.dagSize);
 
-    const uint32_t chunk = 10000 * m_settings.localWorkSize;
+    //#define CHUNK_MUL_FACTOR m_settings.localWorkSize
+    #define CHUNK_MUL_FACTOR 128     
+            
+    const uint32_t chunk = 10000 * CHUNK_MUL_FACTOR;
     for (start = 0; start <= workItems - chunk; start += chunk)
     {
         auto t_start = high_resolution_clock::now();
 
         m_dagKernel.setArg(0, start);
         m_queue.enqueueNDRangeKernel(
-            m_dagKernel, cl::NullRange, chunk, m_settings.localWorkSize);
+            m_dagKernel, cl::NullRange, chunk, CHUNK_MUL_FACTOR);
         m_queue.finish();
 
         auto t_end = high_resolution_clock::now();
@@ -290,10 +293,10 @@ bool EthDevce::gen_dag(int epoch)
     if (start < workItems)
     {
         uint32_t groupsLeft = workItems - start;
-        groupsLeft = (groupsLeft + m_settings.localWorkSize - 1) / m_settings.localWorkSize;
+        groupsLeft = (groupsLeft + CHUNK_MUL_FACTOR - 1) / CHUNK_MUL_FACTOR;
         m_dagKernel.setArg(0, start);
         m_queue.enqueueNDRangeKernel(m_dagKernel, cl::NullRange,
-                                        groupsLeft * m_settings.localWorkSize, m_settings.localWorkSize);
+                                        groupsLeft * CHUNK_MUL_FACTOR, CHUNK_MUL_FACTOR);
         m_queue.finish();
     }
 
@@ -344,7 +347,7 @@ ethash::search_result EthDevce::search(int start_nonce, ethash::hash256 &seed, e
     m_header.push_back(cl::Buffer(m_context, CL_MEM_READ_ONLY, 32));
 
     m_searchBuffer.clear();
-    m_searchBuffer.emplace_back(m_context, CL_MEM_WRITE_ONLY, sizeof(SearchResults));
+    m_searchBuffer.emplace_back(m_context, CL_MEM_READ_WRITE, sizeof(SearchResults));
 
     m_searchKernel.setArg(0, m_searchBuffer[0]); // Supply output buffer to kernel.
     m_searchKernel.setArg(1, m_header[0]);       // Supply header buffer to kernel.
@@ -390,13 +393,15 @@ ethash::search_result EthDevce::search(int start_nonce, ethash::hash256 &seed, e
 
         if (results.count > 0)
         {
+			printf("results.count = %d\n", results.count);
             OCL_CHECK(err, err = m_queue.enqueueReadBuffer(
                                 m_searchBuffer[0],
                                 CL_TRUE,
                                 0,                                       // offset
-                                results.count * sizeof(results.rslt[0]), // size
+                                //results.count * sizeof(results.rslt[0]), // size
+								16*sizeof(uint32_t),
                                 (void *)&results));
-
+								
             printf("\nSearch: found, startNonce %lu, gid %u, hashCount %u abort %d\n",
                     startNonce, results.rslt[0].gid,
                     results.hashCount, results.abort);
